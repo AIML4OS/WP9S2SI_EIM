@@ -1,10 +1,33 @@
 import pandas as pd
 import numpy as np
 
+
+
 def derive_variable(df, new_var, var_type='numeric', length=None, condition=None, rule=None):
+    
+    """
+    Derives a variable =horizontal rule across table.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame
+        new_var (str): Name of the resulting variable
+        rule (str): Definition of the derived variable
+        var_type (str, optional, default='numeric'): Type of the derived variable 
+            ('numeric', 'character')
+        condition (str or None, optional): Optional condition to filter rows before 
+        deriving the variable
+        length (int or None, optional): Maximum length of the derived variable 
+            (applies only to character variables)
+
+    Returns:
+        pd.DataFrame: Original DataFrame with new column [new_var]
+    """
+    
     # Build boolean mask from condition
     if condition:
-        cond_var, cond_val = condition.split('=')
+        cond_var, cond_val = condition.split('=', 1)
+        cond_var = cond_var.strip()
+        cond_val = cond_val.strip()
         filtered = df[cond_var].astype(str) == cond_val
     else:
         filtered = pd.Series([True] * len(df), index=df.index)
@@ -37,7 +60,6 @@ def derive_variable(df, new_var, var_type='numeric', length=None, condition=None
             df.loc[filtered, new_var] = df.loc[filtered, new_var].str[:length]
 
     return df
-
 
 
 

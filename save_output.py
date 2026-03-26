@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine, text, inspect
+from sqlalchemy import create_engine, text, inspect, event
 import urllib
+import time 
 
 def save_output_data(df, server, database, table_output, schema='dbo',
                      trusted_connection='yes', dtype=None,
@@ -26,8 +27,14 @@ def save_output_data(df, server, database, table_output, schema='dbo',
             f"DATABASE={database};"
             f"Trusted_Connection={trusted_connection};"
         )
-        engine = create_engine(f"mssql+pyodbc:///?odbc_connect={conn_str}")
+        engine = create_engine(f"mssql+pyodbc:///?odbc_connect={conn_str}", fast_executemany=True)
 
+        @event.listens_for(engine, "before_cursor_execute")
+        def receive_before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+                if executemany:
+                    cursor.fast_executemany = True
+ 
+        time_start = time.time()
         with engine.begin() as connection:
             inspector = inspect(engine)
             existing_columns = inspector.get_columns(table_output, schema=schema)
@@ -58,10 +65,12 @@ def save_output_data(df, server, database, table_output, schema='dbo',
                 schema=schema,
                 if_exists='append',
                 index=False,
-                dtype=dtype
-            )
-
-        print(f"✅ Data successfully written to {schema}.{table_output} ({df_filtered.shape[0]} rows).")
+                dtype=dtype,
+                chunksize=50000)
+        
+        time_end = time.time()
+        print(f"✅ Data successfully written to {schema}.{table_output} ({df_filtered.shape[0]} rows) {time_end - time_start:.2f} seconds.")
 
     except Exception as e:
         print("❌ Failed to save data to SQL Server:", e)
+
