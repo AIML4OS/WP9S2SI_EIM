@@ -574,7 +574,7 @@ def fast_tune_lightgbm(
     # leakage-safe rare mapping during tuning (per fold)
     rare_threshold_tune: Optional[int | float] = None,  # absolute count per fold (>=1)
     rare_fraction_tune: Optional[float] = None,         # relative fraction per fold in (0,1]
-    # NEW: reproducibility knobs for tuning
+    # reproducibility knobs for tuning
     deterministic_tune: str = "off",   # "off" | "light" | "strict"
     id_col: Optional[str] = None,      # stable sort key (optional)
 ) -> Dict[str, Any]:
@@ -701,7 +701,7 @@ def fast_tune_lightgbm(
             # Regularization (coarse)
             "lambda_l1":               trial.suggest_float("lambda_l1", 0.0, 5.0, step=0.5),
             "lambda_l2":               trial.suggest_float("lambda_l2", 0.0, 5.0, step=0.5),
-            # (NEW) Feature & bagging subsampling — coarse grid for speed
+            # Feature & bagging subsampling — coarse grid for speed
             "feature_fraction":        trial.suggest_categorical("feature_fraction", [0.6, 0.7, 0.8, 0.9]),
             "bagging_fraction":        trial.suggest_categorical("bagging_fraction", [0.6, 0.7, 0.8, 0.9]),
             "bagging_freq":            trial.suggest_categorical("bagging_freq", [1, 3]),  # >0 to activate bagging
@@ -969,7 +969,7 @@ def train_lightgbm_final(
     save_params: bool = True,
     verbose: Optional[int] = 100,
     reg_stratify: Optional[Dict[str, Any]] = None,
-    id_col: Optional[str] = None,                # NEW: stable sort key for determinism
+    id_col: Optional[str] = None,                # stable sort key for determinism
 ) -> Tuple[lgb.Booster, np.ndarray, Dict[str, Any], Dict[str, Any], List[str], Dict[str, Any], Dict[str, Any]]:
     """
     Manual K-fold CV to pick best_iter.
